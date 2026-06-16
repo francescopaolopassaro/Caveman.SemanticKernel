@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <PackageId>Caveman.SemanticKernel</PackageId>
-    <Version>1.2.1</Version>
+    <Version>1.0.0</Version>
     <Authors>Francesco Paolo Passaro</Authors>
     <Company>Francesco Paolo Passaro</Company>
     <Description>Semantic Kernel plugins for Caveman (NLP Prompt Compressor): prompt token optimization, conversation/agent context tools (summarize, fit-to-budget, memory, focus, token estimate), developer services and on-demand project documentation. Add-on package; references the dependency-free Caveman core. Licensed under the Caveman License (MIT + mandatory attribution to Passaro Francesco Paolo - Digitalsolutions.it).</Description>
     <PackageTags>AI;NLP;LLM;PromptEngineering;SemanticKernel;Agents</PackageTags>
     <RepositoryUrl>https://github.com/francescopaolopassaro/caveman-semantickernel</RepositoryUrl>
-    <PackageReleaseNotes>1.2.1: Split out of the Caveman package — the Semantic Kernel plugins (TokenOptimizerPlugin, CavemanServicesPlugin, CavemanWikiPlugin, CavemanConversationPlugin) now live here so the core Caveman package no longer forces a SemanticKernel dependency. New CavemanConversationPlugin exposes conversation/agent tools (summarize_conversation, fit_to_budget, extract_memory, focus_conversation, estimate_tokens).</PackageReleaseNotes>
+    <PackageReleaseNotes>1.0.0: Split out of the Caveman package — the Semantic Kernel plugins (TokenOptimizerPlugin, CavemanServicesPlugin, CavemanWikiPlugin, CavemanConversationPlugin) now live here so the core Caveman package no longer forces a SemanticKernel dependency. New CavemanConversationPlugin exposes conversation/agent tools (summarize_conversation, fit_to_budget, extract_memory, focus_conversation, estimate_tokens).</PackageReleaseNotes>
 
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <OutputType>Library</OutputType>
@@ -25,11 +25,16 @@
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <RootNamespace>caveman.core.SemanticKernel.Plugin</RootNamespace>
     <AssemblyName>Caveman.SemanticKernel</AssemblyName>
+    <PackageIcon>caveman-icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="tests\**" />
   </ItemGroup>
+
+<ItemGroup>
+  <None Include="caveman-icon.png" Pack="true" PackagePath="\" />
+</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.74.0" />

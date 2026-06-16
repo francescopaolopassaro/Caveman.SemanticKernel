@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37301.10 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caveman.SemanticKernel", "Caveman.SemanticKernel.csproj", "{0FBEBBEA-1880-957D-3EFA-52AB4405867F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0FBEBBEA-1880-957D-3EFA-52AB4405867F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FBEBBEA-1880-957D-3EFA-52AB4405867F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FBEBBEA-1880-957D-3EFA-52AB4405867F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FBEBBEA-1880-957D-3EFA-52AB4405867F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2249D82D-71C4-49FD-995C-416AD328396C}
+	EndGlobalSection
+EndGlobal
