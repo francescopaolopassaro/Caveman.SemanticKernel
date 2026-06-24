@@ -61,4 +61,66 @@ public class CavemanConversationPluginTests
         Assert.That(fitted, Is.Not.Empty);
         Assert.That(new caveman.core.services.ModelTokenizer().CountTokens(fitted), Is.LessThanOrEqualTo(60));
     }
+
+    // ── CavemanSharedContext ─────────────────────────────────────────────────
+
+    [Test]
+    public void ShareContext_ReturnsTokenSavingsSummary()
+    {
+        var result = _plugin.ShareContext("test-key", Discourse);
+        Assert.That(result, Does.Contain("test-key"));
+        Assert.That(result, Does.Contain("tokens"));
+    }
+
+    [Test]
+    public void GetSharedContext_ReturnsCompressedContent()
+    {
+        _plugin.ShareContext("ctx-read", Discourse);
+        var retrieved = _plugin.GetSharedContext("ctx-read");
+        Assert.That(retrieved, Is.Not.Null.And.Not.Empty);
+        Assert.That(retrieved, Does.Not.Contain("[error:"));
+    }
+
+    [Test]
+    public void GetSharedContext_UnknownKey_ReturnsError()
+    {
+        var result = _plugin.GetSharedContext("nonexistent-key-xyz");
+        Assert.That(result, Does.Contain("[error:"));
+    }
+
+    [Test]
+    public void SharedContextStats_AfterPut_ReportsEntries()
+    {
+        _plugin.ShareContext("stats-key", Discourse);
+        var stats = _plugin.SharedContextStats();
+        Assert.That(stats, Does.Contain("entries").Or.Contain("entry"));
+    }
+
+    // ── CavemanMessageDeduplicator ───────────────────────────────────────────
+
+    [Test]
+    public void DedupMessages_NoDuplicates_ReturnsNoneFound()
+    {
+        var messages = "Hello world, this is the first message.\n---\nThis is an entirely different second message.";
+        var result = _plugin.DedupMessages(messages);
+        Assert.That(result, Does.Contain("no duplicates"));
+    }
+
+    [Test]
+    public void DedupMessages_WithDuplicates_ReportsDuplicate()
+    {
+        var longMsg = new string('A', 60); // > MinContentLength (50)
+        var messages = string.Join("\n---\n", longMsg, "different msg 1", "different msg 2", "different msg 3", longMsg);
+        var result = _plugin.DedupMessages(messages);
+        Assert.That(result, Does.Contain("duplicate"));
+    }
+
+    [Test]
+    public void CleanDuplicateMessages_WithDuplicates_ReplacesWithPlaceholder()
+    {
+        var longMsg = new string('B', 60);
+        var messages = string.Join("\n---\n", longMsg, "msg2 text here different", "msg3 text here different", "msg4 text here different", longMsg);
+        var cleaned = _plugin.CleanDuplicateMessages(messages);
+        Assert.That(cleaned, Does.Contain("[duplicate of message #"));
+    }
 }

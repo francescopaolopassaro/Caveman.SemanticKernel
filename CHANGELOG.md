@@ -2,6 +2,27 @@
 
 All notable changes to **Caveman.SemanticKernel** are documented in this file.
 
+## [1.3.1] - 2026-06-24
+
+Aligned with **Caveman core 1.3.1** (corrects the 1.3.0 NuGet package which was missing the new
+content-aware pipeline services). Exposes `CavemanSharedContext` and `CavemanMessageDeduplicator`
+as Semantic Kernel functions — the last two additions from the 1.3.0 feature set that were not yet
+wrapped. All existing plugins are unchanged; fully additive release.
+
+### Added
+
+#### `CavemanConversationPlugin` — five new functions
+
+| Function | What it does |
+| :--- | :--- |
+| `share_context(key, content, agentName?)` | Compresses content with Caveman NLP and stores it by key in the inter-agent shared context store (TTL 30 min). Returns token savings metadata. |
+| `get_shared_context(key, full?)` | Retrieves the compressed copy (default) or the original content by key. Returns an error if the key is unknown or expired. |
+| `shared_context_stats()` | Reports aggregate token savings across all active entries in the shared store. |
+| `dedup_messages(messages, delimiter?)` | Scans a delimiter-separated message sequence for re-read duplicates and reports wasted tokens. |
+| `clean_duplicate_messages(messages, delimiter?)` | Replaces duplicate messages with `[duplicate of message #N]` placeholders and returns the cleaned sequence. |
+
+---
+
 ## [1.3.0] - 2026-06-23
 
 Aligned with **Caveman core 1.3.0**. Two new plugins expose the content-aware
@@ -64,5 +85,6 @@ so the core no longer forces a Microsoft.SemanticKernel dependency.
 - `CavemanWikiPlugin` — `generate_project_wiki`, `get_project_summary`,
   `detect_project_type`.
 
+[1.3.1]: https://github.com/francescopaolopassaro/caveman-semantickernel/releases/tag/v1.3.1
 [1.3.0]: https://github.com/francescopaolopassaro/caveman-semantickernel/releases/tag/v1.3.0
 [1.0.0]: https://github.com/francescopaolopassaro/caveman-semantickernel/releases/tag/v1.0.0
