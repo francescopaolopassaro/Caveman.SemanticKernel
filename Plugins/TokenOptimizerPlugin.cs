@@ -75,17 +75,17 @@ namespace caveman.core.SemanticKernel.Plugin
         /// <param name="level">Livello di compressione: 0=Nessuno, 1=Light, 2=Semantico, 3=Aggressivo.</param>
         /// <returns>Risultato della compressione con metriche dettagliate.</returns>
         [KernelFunction("OptimizePrompt")]
-        [Description("Optimizes the prompt by reducing tokens based on the required level (0-3). " +
+        [Description("Optimizes the prompt by reducing tokens based on the required level (0-5). " +
                      "Returns CompressionResult with compressed text and green metrics. " +
                      "Gracefully falls back to original text if language/model is unsupported.")]
         public async Task<CompressionResult> OptimizePrompt(
             [Description("The raw text to compress")] string input,
-            [Description("Level: 0=None, 1=Light, 2=Semantic (default), 3=Aggressive")] int level = 2)
+            [Description("Level: 0=None, 1=Light, 2=Semantic (default), 3=Aggressive, 4=Statistical (TF-IDF), 5=Syntactic (rule-based, grammatical)")] int level = 2)
         {
             if (input is null)
                 throw new ArgumentNullException(nameof(input));
 
-            int safeLevel = Math.Clamp(level, 0, 3);
+            int safeLevel = Math.Clamp(level, 0, 5);
 
             try
             {

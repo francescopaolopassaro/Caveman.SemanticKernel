@@ -22,6 +22,7 @@ public class CavemanServicesPlugin
     private readonly CavemanSafetyGuard _safety;
     private readonly CavemanStatsTracker _stats;
     private readonly CavemanContextCompressor _contextCompressor;
+    private readonly CavemanCodeCompressor _codeCompressor;
 
     public CavemanServicesPlugin(
         CavemanCommitGenerator? commitGen = null,
@@ -29,7 +30,8 @@ public class CavemanServicesPlugin
         CavecrewService? cavecrew = null,
         CavemanSafetyGuard? safety = null,
         CavemanStatsTracker? stats = null,
-        CavemanContextCompressor? contextCompressor = null)
+        CavemanContextCompressor? contextCompressor = null,
+        CavemanCodeCompressor? codeCompressor = null)
     {
         _commitGen = commitGen ?? new CavemanCommitGenerator();
         _reviewer = reviewer ?? new CavemanReviewService();
@@ -37,6 +39,7 @@ public class CavemanServicesPlugin
         _safety = safety ?? new CavemanSafetyGuard();
         _stats = stats ?? new CavemanStatsTracker();
         _contextCompressor = contextCompressor ?? new CavemanContextCompressor();
+        _codeCompressor = codeCompressor ?? new CavemanCodeCompressor();
     }
 
     [KernelFunction("generate_commit")]
@@ -117,5 +120,18 @@ public class CavemanServicesPlugin
     {
         _stats.ResetSession();
         return "Session stats reset.";
+    }
+
+    [KernelFunction("skeletonize_code")]
+    [Description("Strips comments and blank-line runs from source code, then replaces function/method bodies with a placeholder, keeping only " +
+                 "signatures. Uses real brace-depth counting (C-family) or indentation (Python) to find each body — never a container like a " +
+                 "class. Lossy by design: use to let an agent see a file's shape without spending tokens on implementation detail.")]
+    public string SkeletonizeCode(
+        [Description("Source code to skeletonize")] string code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return code ?? string.Empty;
+
+        var r = _codeCompressor.Compress(code, skeletonize: true);
+        return r.Compressed;
     }
 }

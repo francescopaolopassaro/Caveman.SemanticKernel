@@ -15,16 +15,30 @@ Installing it automatically pulls in the `Caveman` core package.
 
 ---
 
+## Technology Partnership
+
+<img src="https://www.digitalsolutions.it/img/partners/novaroutelogo.png" alt="NovaRouteAI" height="180" style="max-width: 100%; height: auto; min-height: 180px; max-height: 190px;">
+
+**[NovaRouteAI](https://novarouteai.com/?ref=synthelion)** — Build with Chinese AI models through one simple API.
+
+NovaRouteAI helps developers and AI SaaS teams test, compare, and run models like DeepSeek, Qwen, Doubao, Kimi, and GLM without managing multiple provider accounts. Start with test credits and optimize your cost per successful task.
+
+[Click here to know NovaRouteAI](https://novarouteai.com/?ref=synthelion)
+
+---
+
 ## Plugins
 
 | Plugin | Kernel functions |
 | :--- | :--- |
-| `TokenOptimizerPlugin` | `OptimizePrompt`, `estimate_tokens` |
-| `CavemanConversationPlugin` | `summarize_conversation`, `fit_to_budget`, `extract_memory`, `focus_conversation`, `estimate_tokens` |
-| `CavemanServicesPlugin` | `generate_commit`, `review_diff`, `check_safety`, `get_stats`, `track_compression`, `investigate_project`, `compress_context`, `reset_stats` |
+| `TokenOptimizerPlugin` | `OptimizePrompt` (levels 0–5), `estimate_tokens` |
+| `CavemanConversationPlugin` | `summarize_conversation`, `fit_to_budget`, `extract_memory`, `focus_conversation`, `estimate_tokens`, `share_context`, `get_shared_context`, `shared_context_stats`, `dedup_messages`, `clean_duplicate_messages`, `check_near_duplicate` |
+| `CavemanServicesPlugin` | `generate_commit`, `review_diff`, `check_safety`, `get_stats`, `track_compression`, `investigate_project`, `compress_context`, `reset_stats`, `skeletonize_code` |
 | `CavemanWikiPlugin` | `generate_project_wiki`, `get_project_summary`, `detect_project_type` |
 | **`CavemanRouterPlugin`** *(v1.3.0)* | `route_content`, `detect_content_type`, `compress_json`, `retrieve_ccr`, `analyze_waste`, `batch_route` |
 | **`CavemanOutputPlugin`** *(v1.3.0)* | `shape_system_prompt`, `remove_verbosity_steering`, `has_verbosity_steering`, `scan_volatile_tokens`, `has_volatile_tokens`, `optimize_for_cache` |
+| **`CavemanRetrievalPlugin`** *(v1.4.3)* | `retrieve`, `retrieve_with_feedback` |
+| **`CavemanSummarizationPlugin`** *(v1.4.3)* | `summarize_text`, `summarize_text_topic_aware` |
 
 ---
 
@@ -39,6 +53,8 @@ builder.Plugins.AddFromType<CavemanConversationPlugin>();   // agent context too
 builder.Plugins.AddFromType<TokenOptimizerPlugin>();        // NLP prompt compression
 builder.Plugins.AddFromType<CavemanRouterPlugin>();         // content-aware routing (v1.3.0)
 builder.Plugins.AddFromType<CavemanOutputPlugin>();         // output shaping (v1.3.0)
+builder.Plugins.AddFromType<CavemanRetrievalPlugin>();      // BM25+ retrieval (v1.4.3)
+builder.Plugins.AddFromType<CavemanSummarizationPlugin>();  // plain-text summarization (v1.4.3)
 var kernel = builder.Build();
 ```
 
@@ -51,7 +67,7 @@ Compresses any prompt text using Caveman's NLP engine (stop-word removal + lemma
 
 | Function | Description |
 | :--- | :--- |
-| `OptimizePrompt(input, level)` | Compresses text at level 0–3 (None/Light/Semantic/Aggressive). Returns `CompressionResult` with savings metrics. |
+| `OptimizePrompt(input, level)` | Compresses text at level 0–5 (None/Light/Semantic/Aggressive/Statistical/Syntactic). Returns `CompressionResult` with savings metrics. |
 | `estimate_tokens(input, model)` | Token count for gpt-4, gpt-3.5, llama-3, gemma-3, claude-3. |
 
 ### CavemanConversationPlugin
@@ -64,6 +80,12 @@ Gives a model full control over its own context window — no embeddings, no ext
 | `extract_memory(conversation, maxSentences, maxKeywords)` | Distills salient sentences + key terms for durable agent memory. |
 | `focus_conversation(conversation, query, topK)` | Keeps only the blocks most relevant to a query. |
 | `estimate_tokens(text, model)` | Token count estimate. |
+| `share_context(key, content, agentName)` | Compresses and stores content under a key for inter-agent sharing (TTL 30 min). |
+| `get_shared_context(key, full)` | Retrieves the compressed (default) or original content by key. |
+| `shared_context_stats()` | Aggregate token savings across all active shared-context entries. |
+| `dedup_messages(messages, delimiter)` | Scans a delimiter-separated message sequence for re-read duplicates (exact hash match); reports wasted tokens. |
+| `clean_duplicate_messages(messages, delimiter)` | Replaces duplicates with `[duplicate of message #N]` placeholders. |
+| `check_near_duplicate(a, b, maxDistance, shingleSize)` | SimHash-based near-duplicate check for two texts (catches templated text, not just exact matches). |
 
 ### CavemanServicesPlugin
 Developer services: commit generation, code review, safety checks, stats, project exploration.
@@ -78,6 +100,7 @@ Developer services: commit generation, code review, safety checks, stats, projec
 | `investigate_project(projectPath)` | Maps classes, methods and function definitions in a directory. |
 | `compress_context(directoryPath)` | Compresses CLAUDE.md, TODO, README.md for AI context windows. |
 | `reset_stats()` | Clears session statistics. |
+| `skeletonize_code(code)` | Strips comments and collapses function/method bodies to signatures only (real brace-depth/indentation parsing, not regex). |
 
 ### CavemanWikiPlugin
 Generates AI-optimized project documentation on demand.
@@ -141,6 +164,32 @@ var shaped = await kernel.InvokeAsync("CavemanOutputPlugin", "optimize_for_cache
     ["verbosityLevel"]  = 2
 });
 ```
+
+### CavemanRetrievalPlugin *(new in v1.4.3)*
+BM25+ ranking over arbitrary text chunks — pure term statistics, no embeddings, no model, no network call.
+
+| Function | Description |
+| :--- | :--- |
+| `retrieve(documents, query, delimiter, topK)` | Ranks `---`-delimited text chunks against a query with plain BM25+. |
+| `retrieve_with_feedback(documents, query, delimiter, topK, iso3)` | Same, plus RM3 pseudo-relevance feedback: expands the query with vocabulary from the top initial results before a final re-rank — surfaces relevant chunks that don't literally contain the query's words. |
+
+```csharp
+// Rank log lines by relevance to an error investigation
+var hits = await kernel.InvokeAsync("CavemanRetrievalPlugin", "retrieve", new KernelArguments
+{
+    ["documents"] = string.Join("\n---\n", logLines),
+    ["query"]     = "connection timeout database",
+    ["topK"]      = 5
+});
+```
+
+### CavemanSummarizationPlugin *(new in v1.4.3)*
+Extractive summarization for plain text (use `CavemanConversationPlugin.summarize_conversation` instead for role-tagged transcripts).
+
+| Function | Description |
+| :--- | :--- |
+| `summarize_text(text, sentences, ratio, algo, iso3)` | TF-IDF (`tfidf`) or TextRank (`textrank`, default) extractive summary. |
+| `summarize_text_topic_aware(text, sentences, iso3)` | Segments the text into topics first (TextTiling-style), then allocates the sentence budget proportionally so one dense topic can't starve the rest. Best for long, multi-topic documents. |
 
 ---
 

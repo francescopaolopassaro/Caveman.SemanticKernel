@@ -212,6 +212,28 @@ public class CavemanConversationPlugin
         return string.Join($"\n{delimiter}\n", cleaned);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // check_near_duplicate  (CavemanSimHash)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [KernelFunction("check_near_duplicate")]
+    [Description("Checks whether two texts are near-duplicates using a 64-bit Charikar SimHash fingerprint — catches templated text that differs " +
+                 "only in a substituted value (e.g. a username or IP address), unlike dedup_messages' exact hash matching. " +
+                 "Returns the Hamming distance between fingerprints; lower means more similar.")]
+    public string CheckNearDuplicate(
+        [Description("First text")] string a,
+        [Description("Second text")] string b,
+        [Description("Maximum Hamming distance to still count as a near-duplicate (default: 3)")] int maxDistance = 3,
+        [Description("Shingle size in words for the fingerprint (default: 1)")] int shingleSize = 1)
+    {
+        bool isDuplicate = CavemanSimHash.AreNearDuplicates(a, b, maxDistance, shingleSize);
+        int distance = CavemanSimHash.HammingDistance(
+            CavemanSimHash.Compute(a, shingleSize),
+            CavemanSimHash.Compute(b, shingleSize));
+
+        return $"NearDuplicate: {isDuplicate} | HammingDistance: {distance} (threshold {maxDistance})";
+    }
+
     private static LlmModel ParseModel(string model) => (model ?? string.Empty).Trim().ToLowerInvariant() switch
     {
         "gpt-3.5" or "gpt-3.5-turbo" or "gpt35" => LlmModel.Gpt3_5Turbo,

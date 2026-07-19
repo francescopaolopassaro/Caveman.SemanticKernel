@@ -2,6 +2,28 @@
 
 All notable changes to **Caveman.SemanticKernel** are documented in this file.
 
+## [1.4.3] - 2026-07-19
+
+Catches this package up to three core versions of drift (1.3.1 → 1.4.x). Now references **Caveman core 1.4.3**
+as a NuGet package dependency instead of a project reference (1.4.3 is a corrective re-publish of 1.4.2, which
+was packed from a stale snapshot and was missing the features below).
+
+### Added
+
+- `TokenOptimizerPlugin.OptimizePrompt` now accepts levels 0–5 (previously capped at 3): adds `Statistical`
+  (TF-IDF word scoring) and `Syntactic` (rule-based grammatical-glue pruning).
+- **`CavemanRetrievalPlugin`** (new plugin) — wraps `CavemanRetriever`: `retrieve` (BM25+ ranking of text
+  chunks against a query) and `retrieve_with_feedback` (adds RM3 pseudo-relevance feedback query expansion).
+- **`CavemanSummarizationPlugin`** (new plugin) — plain-text extractive summarization, previously only
+  available for conversation transcripts: `summarize_text` (TF-IDF/TextRank) and `summarize_text_topic_aware`
+  (TextTiling-style topic segmentation before sentence-budget allocation).
+- `CavemanServicesPlugin.skeletonize_code` — strips comments and collapses function/method bodies to
+  signatures only, using real brace-depth (C-family) or indentation (Python) parsing.
+- `CavemanConversationPlugin.check_near_duplicate` — SimHash-based near-duplicate detection for two texts,
+  complementing the existing exact-hash `dedup_messages`/`clean_duplicate_messages`.
+
+---
+
 ## [1.3.1] - 2026-06-24
 
 Aligned with **Caveman core 1.3.1** (corrects the 1.3.0 NuGet package which was missing the new
