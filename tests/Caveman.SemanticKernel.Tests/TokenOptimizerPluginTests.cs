@@ -443,5 +443,39 @@ namespace caveman.tests
             Assert.That(result.EstimatedCO2SavedMg, Is.EqualTo(calculatedCO2).Within(0.0001),
                 "CO2 metric should match: energy * 0.4");
         }
+
+        // ==================== GLOBAL IDF (v1.4.4) TESTS ====================
+
+        [Test]
+        public void IdfLanguages_NoArg_ReportsFiftySixLanguages()
+        {
+            var r = _plugin.IdfLanguages();
+            Assert.That(r, Does.Contain("language_count: 56"));
+        }
+
+        [Test]
+        public void IdfLanguages_ExistingIso3_ReportsAvailableWithCorpus()
+        {
+            var r = _plugin.IdfLanguages("ita");
+            Assert.That(r, Does.Contain("ita: available"));
+            Assert.That(r, Does.Contain("corpus"));
+        }
+
+        [Test]
+        public void IdfLanguages_UnknownIso3_ReportsNoTable()
+        {
+            var r = _plugin.IdfLanguages("zzz");
+            Assert.That(r, Does.Contain("zzz: no shipped table"));
+        }
+
+        [Test]
+        public async Task Kernel_InvokeIdfLanguages_ReturnsLanguageList()
+        {
+            var result = await _kernel.InvokeAsync<string>(
+                pluginName: "TokenOptimizer",
+                functionName: "idf_languages",
+                new KernelArguments());
+            Assert.That(result, Does.Contain("language_count: 56"));
+        }
     }
 }

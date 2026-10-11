@@ -134,4 +134,29 @@ public class CavemanServicesPlugin
         var r = _codeCompressor.Compress(code, skeletonize: true);
         return r.Compressed;
     }
+
+    [KernelFunction("compress_sql")]
+    [Description("Whitespace-safe SQL compression: collapses redundant formatting while preserving string literals, quoted identifiers, " +
+                 "nested parentheses and comments. With stripComments=true, SQL comments are removed; with foldValues=true, VALUES tuples are " +
+                 "replaced by a content-derived hash reference (reported in ccr_hash, retrievable within a short TTL) and tuples_dropped counts " +
+                 "how many were folded. Use before sending SQL to an LLM to save tokens without breaking the statement.")]
+    public string CompressSql(
+        [Description("SQL statement or script to compress")] string sql,
+        [Description("Remove SQL comments (-- and /* */) (default: false)")] bool stripComments = false,
+        [Description("Replace VALUES tuples with a content hash reference and report dropped tuples (default: false)")] bool foldValues = false,
+        [Description("Maximum VALUES tuples kept before folding the rest (default: 8)")] int maxValues = 8)
+    {
+        if (string.IsNullOrWhiteSpace(sql)) return sql ?? string.Empty;
+
+        var r = new CavemanSqlCompressor().Compress(sql, stripComments, foldValues, maxValues);
+        if (!r.WasCompressed) return r.Compressed;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"[Strategy: SQL whitespace compression | Tuples dropped: {r.TuplesDropped}]");
+        if (r.CcrHash != null)
+            sb.AppendLine($"[CCR hash: {r.CcrHash} — use retrieve_ccr to get dropped tuples]");
+        sb.AppendLine();
+        sb.Append(r.Compressed);
+        return sb.ToString();
+    }
 }

@@ -45,6 +45,25 @@ namespace caveman.core.SemanticKernel.Plugin
             _compressionService = compressionService ?? throw new ArgumentNullException(nameof(compressionService));
         }
 
+        [KernelFunction("idf_languages")]
+        [Description("Reports the 56 per-language global IDF tables shipped with v1.4.4 (used by the statistical level's 50/50 global-IDF blend and the aggressive ubiquity gate). When iso3 is given, returns whether a table exists for it and its reference-corpus size.")]
+        public string IdfLanguages(
+            [Description("ISO 639-3 code to check for a shipped global-IDF table (optional)")] string? iso3 = null)
+        {
+            var provider = new CavemanGlobalIdfProvider();
+            var languages = CavemanGlobalIdfProvider.GetShippedLanguages().OrderBy(l => l).ToList();
+
+            if (!string.IsNullOrWhiteSpace(iso3))
+            {
+                var code = iso3.Trim().ToLowerInvariant();
+                return provider.HasData(code)
+                    ? $"{code}: available (corpus {provider.GetCorpusSize(code).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} documents)"
+                    : $"{code}: no shipped table";
+            }
+
+            return $"language_count: {languages.Count}\n" + string.Join(", ", languages);
+        }
+
         /// <summary>
         /// Stima il numero di token di un testo per il modello indicato, utile per verificare
         /// l'occupazione della finestra di contesto prima dell'invio.

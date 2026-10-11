@@ -2,6 +2,26 @@
 
 All notable changes to **Caveman.SemanticKernel** are documented in this file.
 
+## [1.4.5] - 2026-10-11
+
+Aligned with **Caveman core 1.4.5**. No API changes: every `compress` / `OptimizePrompt` call now keeps structured values (IPs, versions, dates, URLs) verbatim, never corrupts JSON/code/SQL/YAML (routed to the structure-aware compressors or returned unchanged) and no longer inflates Chinese/Japanese output.
+
+---
+
+## [1.4.4] - 2026-08-13
+
+Aligned with **Caveman core 1.4.4** (referenced as a NuGet dependency). Fully additive release; no breaking changes.
+
+### Added
+
+- `CavemanServicesPlugin.compress_sql` — whitespace-safe SQL compression that preserves string literals, quoted
+  identifiers, nested parentheses and comments. Optional `stripComments` (removes `--` and `/* */`) and `foldValues`
+  (replaces `VALUES` tuples with a content-derived CCR-hash reference, retrievable within a short TTL via
+  `retrieve_ccr`), with `tuples_dropped` reporting how many tuples were folded.
+- `CavemanRouterPlugin.detect_content_type` now recognizes `Sql` content (detected before `Code`/`Tabular`).
+
+---
+
 ## [1.4.3] - 2026-07-19
 
 Catches this package up to three core versions of drift (1.3.1 → 1.4.x). Now references **Caveman core 1.4.3**

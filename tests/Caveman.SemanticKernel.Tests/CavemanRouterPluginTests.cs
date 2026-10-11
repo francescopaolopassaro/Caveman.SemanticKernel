@@ -32,6 +32,22 @@ public class CavemanRouterPluginTests
         Assert.That(_plugin.DetectContentType(string.Empty), Is.EqualTo("PlainText"));
     }
 
+    [Test]
+    public void DetectContentType_Sql_ReturnsSql()
+    {
+        const string sql = "SELECT id, name FROM users WHERE status = 'active' ORDER BY created_at DESC;";
+        var r = _plugin.DetectContentType(sql);
+        Assert.That(r, Does.Contain("Sql"));
+    }
+
+    [Test]
+    public async Task RouteContent_Sql_UsesSqlCompressor()
+    {
+        const string sql = "SELECT id,\n  name,\n  email\nFROM users\nWHERE status = 'active'\nORDER BY created_at;";
+        var result = await _plugin.RouteContent(sql);
+        Assert.That(result, Does.Contain("Sql"));
+    }
+
     // ─── RouteContent ─────────────────────────────────────────────────────
 
     [Test]

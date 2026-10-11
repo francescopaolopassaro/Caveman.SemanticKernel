@@ -31,11 +31,11 @@ NovaRouteAI helps developers and AI SaaS teams test, compare, and run models lik
 
 | Plugin | Kernel functions |
 | :--- | :--- |
-| `TokenOptimizerPlugin` | `OptimizePrompt` (levels 0–5), `estimate_tokens` |
+| `TokenOptimizerPlugin` | `OptimizePrompt` (levels 0–5), `estimate_tokens`, `idf_languages` |
 | `CavemanConversationPlugin` | `summarize_conversation`, `fit_to_budget`, `extract_memory`, `focus_conversation`, `estimate_tokens`, `share_context`, `get_shared_context`, `shared_context_stats`, `dedup_messages`, `clean_duplicate_messages`, `check_near_duplicate` |
-| `CavemanServicesPlugin` | `generate_commit`, `review_diff`, `check_safety`, `get_stats`, `track_compression`, `investigate_project`, `compress_context`, `reset_stats`, `skeletonize_code` |
+| `CavemanServicesPlugin` | `generate_commit`, `review_diff`, `check_safety`, `get_stats`, `track_compression`, `investigate_project`, `compress_context`, `reset_stats`, `skeletonize_code`, `compress_sql` |
 | `CavemanWikiPlugin` | `generate_project_wiki`, `get_project_summary`, `detect_project_type` |
-| **`CavemanRouterPlugin`** *(v1.3.0)* | `route_content`, `detect_content_type`, `compress_json`, `retrieve_ccr`, `analyze_waste`, `batch_route` |
+| **`CavemanRouterPlugin`** *(v1.4.4)* | `route_content`, `detect_content_type`, `compress_json`, `retrieve_ccr`, `analyze_waste`, `batch_route` |
 | **`CavemanOutputPlugin`** *(v1.3.0)* | `shape_system_prompt`, `remove_verbosity_steering`, `has_verbosity_steering`, `scan_volatile_tokens`, `has_volatile_tokens`, `optimize_for_cache` |
 | **`CavemanRetrievalPlugin`** *(v1.4.3)* | `retrieve`, `retrieve_with_feedback` |
 | **`CavemanSummarizationPlugin`** *(v1.4.3)* | `summarize_text`, `summarize_text_topic_aware` |
@@ -69,6 +69,7 @@ Compresses any prompt text using Caveman's NLP engine (stop-word removal + lemma
 | :--- | :--- |
 | `OptimizePrompt(input, level)` | Compresses text at level 0–5 (None/Light/Semantic/Aggressive/Statistical/Syntactic). Returns `CompressionResult` with savings metrics. |
 | `estimate_tokens(input, model)` | Token count for gpt-4, gpt-3.5, llama-3, gemma-3, claude-3. |
+| `idf_languages(iso3)` | Reports the 56 per-language global IDF tables shipped with v1.4.4 (50/50 global-IDF blend at Statistical, ubiquity gate at Aggressive). With `iso3`, returns whether a table exists and its corpus size. |
 
 ### CavemanConversationPlugin
 Gives a model full control over its own context window — no embeddings, no extra LLM calls.
@@ -101,6 +102,7 @@ Developer services: commit generation, code review, safety checks, stats, projec
 | `compress_context(directoryPath)` | Compresses CLAUDE.md, TODO, README.md for AI context windows. |
 | `reset_stats()` | Clears session statistics. |
 | `skeletonize_code(code)` | Strips comments and collapses function/method bodies to signatures only (real brace-depth/indentation parsing, not regex). |
+| `compress_sql(sql, stripComments, foldValues, maxValues)` | Whitespace-safe SQL compression preserving string literals, quoted identifiers, nested parentheses and comments. Optional `stripComments` (removes `--`/`/* */`), `foldValues` (replaces `VALUES` tuples with a CCR-hash reference retrievable via `retrieve_ccr`). |
 
 ### CavemanWikiPlugin
 Generates AI-optimized project documentation on demand.
@@ -117,7 +119,7 @@ Content-aware compression pipeline: auto-detects content type and applies the be
 | Function | Description |
 | :--- | :--- |
 | `route_content(content, query, profile)` | Routes any content through the pipeline. Returns detected type, strategy, token savings and compressed text. Profiles: `balanced` (default), `light`, `agent`, `aggressive`. |
-| `detect_content_type(content)` | Classifies content as JsonArray, GitDiff, LogOrStacktrace, Html, Code, Tabular, PlainText, etc. — no compression. |
+| `detect_content_type(content)` | Classifies content as JsonArray, JsonObject, Sql, GitDiff, LogOrStacktrace, Html, Code, Tabular, PlainText, etc. — no compression. |
 | `compress_json(jsonArray, query, maxItems)` | SmartCrusher: lossless markdown-table or CSV compaction, or BM25 row-drop with a CCR marker. |
 | `retrieve_ccr(ccrHash)` | Retrieves original rows dropped by `compress_json` (5-min TTL). |
 | `analyze_waste(content)` | Reports estimated wasted tokens by category: HTML noise, base64 blobs, whitespace, JSON bloat. Non-destructive. |

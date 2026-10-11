@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <PackageId>Caveman.SemanticKernel</PackageId>
-    <Version>1.4.3</Version>
+    <Version>1.4.5</Version>
     <Authors>Francesco Paolo Passaro</Authors>
     <Company>Francesco Paolo Passaro</Company>
     <Description>Semantic Kernel plugins for Caveman (NLP Prompt Compressor): prompt token optimization, conversation/agent context tools (summarize, fit-to-budget, memory, focus, token estimate), developer services and on-demand project documentation. Add-on package; references the dependency-free Caveman core. Licensed under the Caveman License (MIT + mandatory attribution to Passaro Francesco Paolo - Digitalsolutions.it).</Description>
     <PackageTags>AI;NLP;LLM;PromptEngineering;SemanticKernel;Agents</PackageTags>
     <RepositoryUrl>https://github.com/francescopaolopassaro/caveman-semantickernel</RepositoryUrl>
-    <PackageReleaseNotes>1.4.3: aligned with Caveman core 1.4.3 (now referenced as a NuGet dependency instead of a project reference; 1.4.3 is a corrective re-publish of 1.4.2, which was missing several 1.4.x features). Catches this package up to three core versions of drift (1.3.1 to 1.4.x). TokenOptimizerPlugin.OptimizePrompt now accepts levels 0-5 (adds Statistical and Syntactic). Two new plugins: CavemanRetrievalPlugin (retrieve/retrieve_with_feedback, BM25+ ranking with optional RM3 pseudo-relevance feedback) and CavemanSummarizationPlugin (summarize_text with tfidf/textrank algorithms, summarize_text_topic_aware). CavemanServicesPlugin gains skeletonize_code (strips comments, collapses function bodies to signatures). CavemanConversationPlugin gains check_near_duplicate (SimHash-based near-duplicate detection, complements the existing exact-hash dedup_messages).</PackageReleaseNotes>
+    <PackageReleaseNotes>1.4.4: aligned with Caveman core 1.4.4. CavemanServicesPlugin gains compress_sql (whitespace-safe SQL compression that preserves string literals, quoted identifiers, nested parentheses and comments; optional stripComments and VALUES folding with a CCR-hash reference for dropped tuples). CavemanRouterPlugin.detect_content_type now recognizes Sql content.</PackageReleaseNotes>
 
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <OutputType>Library</OutputType>
@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Caveman" Version="1.4.3" />
+    <PackageReference Include="Caveman" Version="1.4.5" />
   </ItemGroup>
 
   <ItemGroup>

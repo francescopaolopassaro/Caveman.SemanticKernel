@@ -4,7 +4,7 @@
 //   Copyright (c) 2026 Passaro Francesco Paolo — Digitalsolutions.it.
 //   Licensed under the Caveman License (MIT + mandatory attribution).
 // </copyright>
-// <summary>SK plugin wrapping CavemanContentRouter (1.3.0): content-aware routing, JSON crushing, waste analysis.</summary>
+// <summary>SK plugin wrapping CavemanContentRouter (1.4.4): content-aware routing, JSON crushing, waste analysis, SQL detection.</summary>
 // -----------------------------------------------------------------------------
 using System.ComponentModel;
 using System.Text;
@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel;
 namespace caveman.core.SemanticKernel.Plugin;
 
 /// <summary>
-/// Semantic Kernel plugin for Caveman's content-aware compression pipeline (v1.3.0).
+/// Semantic Kernel plugin for Caveman's content-aware compression pipeline (v1.4.4).
 /// Exposes <see cref="CavemanContentRouter"/>, <see cref="CavemanJsonCrusher"/>,
 /// <see cref="CavemanContentDetector"/> and <see cref="CavemanWasteAnalyzer"/> as kernel functions.
 /// </summary>
@@ -84,7 +84,7 @@ public sealed class CavemanRouterPlugin
 
     [KernelFunction("detect_content_type")]
     [Description("Detects the structural type of a piece of content without compressing it. " +
-                 "Returns one of: JsonArray, JsonObject, Code, LogOrStacktrace, GitDiff, Html, SearchResults, Tabular, PlainText.")]
+                 "Returns one of: JsonArray, JsonObject, Code, Sql, LogOrStacktrace, GitDiff, Html, SearchResults, Tabular, PlainText.")]
     public string DetectContentType(
         [Description("The content to classify")] string content)
     {
