@@ -234,12 +234,37 @@ public class CavemanConversationPlugin
         return $"NearDuplicate: {isDuplicate} | HammingDistance: {distance} (threshold {maxDistance})";
     }
 
-    private static LlmModel ParseModel(string model) => (model ?? string.Empty).Trim().ToLowerInvariant() switch
+    private static LlmModel ParseModel(string model) => LlmModelParser.Parse(model);
+
+    [KernelFunction("compact_messages")]
+    [Description("Compacts a chat messages array (OpenAI-compatible, Anthropic, Bedrock Converse, Gemini or Cohere JSON) and returns messages ready to re-send. " +
+                 "Tool calls and tool results are never removed or altered; JSON, XML, HTML, Markdown and code are compressed, not stripped. " +
+                 "format: 'openai' (default, same roles as the input) or 'converse' (Amazon Bedrock Converse: strict user/assistant alternation, toolUse/toolResult blocks; the system prompt is returned in the 'system' field).")]
+    public string CompactMessages(
+        [Description("The messages array as JSON")] string messagesJson,
+        [Description("Maximum tokens the result must fit within (0 = no hard budget)")] int maxTokens = 0,
+        [Description("Keep the last N turns verbatim")] int keepLastTurns = 4,
+        [Description("Output format: openai (default) or converse")] string format = "openai",
+        [Description("Model name used for token counting (any family: gpt, claude, gemini, qwen, deepseek, grok, glm, spark, mistral, nova, kimi, ernie, command...)")] string model = "gpt-4")
     {
-        "gpt-3.5" or "gpt-3.5-turbo" or "gpt35" => LlmModel.Gpt3_5Turbo,
-        "llama-3" or "llama3" or "llama" => LlmModel.Llama3,
-        "gemma-3" or "gemma3" or "gemma" => LlmModel.Gemma3,
-        "claude-3" or "claude3" or "claude" => LlmModel.Claude3,
-        _ => LlmModel.Gpt4
-    };
+        var result = _textRank.RankAndSummarizeChatDetailed(messagesJson, new ChatSummarizeOptions
+        {
+            ParseConversation = true,
+            KeepLastTurnsVerbatim = keepLastTurns,
+            KeepSystemVerbatim = true,
+            MaxTokens = maxTokens,
+            TokenModel = ParseModel(model)
+        });
+
+        if (string.Equals(format, "converse", StringComparison.OrdinalIgnoreCase))
+        {
+            var messages = result.Conversation.ToConverseMessagesJson(out var system);
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                system,
+                messages = System.Text.Json.JsonDocument.Parse(messages).RootElement
+            });
+        }
+        return result.Conversation.ToMessagesJson();
+    }
 }

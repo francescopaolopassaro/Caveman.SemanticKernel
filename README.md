@@ -11,7 +11,7 @@ Semantic Kernel kernel functions.
 dotnet add package Caveman.SemanticKernel
 ```
 
-Installing it automatically pulls in the `Caveman` core package.
+Installing it automatically pulls in the `Caveman` core package. Version 1.5.0 targets **.NET 10** and references Caveman 1.5.0.
 
 ---
 
@@ -32,13 +32,14 @@ NovaRouteAI helps developers and AI SaaS teams test, compare, and run models lik
 | Plugin | Kernel functions |
 | :--- | :--- |
 | `TokenOptimizerPlugin` | `OptimizePrompt` (levels 0–5), `estimate_tokens`, `idf_languages` |
-| `CavemanConversationPlugin` | `summarize_conversation`, `fit_to_budget`, `extract_memory`, `focus_conversation`, `estimate_tokens`, `share_context`, `get_shared_context`, `shared_context_stats`, `dedup_messages`, `clean_duplicate_messages`, `check_near_duplicate` |
+| `CavemanConversationPlugin` | `compact_messages` *(v1.5.0)*, `summarize_conversation`, `fit_to_budget`, `extract_memory`, `focus_conversation`, `estimate_tokens`, `share_context`, `get_shared_context`, `shared_context_stats`, `dedup_messages`, `clean_duplicate_messages`, `check_near_duplicate` |
 | `CavemanServicesPlugin` | `generate_commit`, `review_diff`, `check_safety`, `get_stats`, `track_compression`, `investigate_project`, `compress_context`, `reset_stats`, `skeletonize_code`, `compress_sql` |
 | `CavemanWikiPlugin` | `generate_project_wiki`, `get_project_summary`, `detect_project_type` |
 | **`CavemanRouterPlugin`** *(v1.4.4)* | `route_content`, `detect_content_type`, `compress_json`, `retrieve_ccr`, `analyze_waste`, `batch_route` |
 | **`CavemanOutputPlugin`** *(v1.3.0)* | `shape_system_prompt`, `remove_verbosity_steering`, `has_verbosity_steering`, `scan_volatile_tokens`, `has_volatile_tokens`, `optimize_for_cache` |
 | **`CavemanRetrievalPlugin`** *(v1.4.3)* | `retrieve`, `retrieve_with_feedback` |
 | **`CavemanSummarizationPlugin`** *(v1.4.3)* | `summarize_text`, `summarize_text_topic_aware` |
+| **`CavemanSemanticCachePlugin`** *(v1.5.0)* | `semantic_cache_get`, `semantic_cache_set`, `semantic_cache_stats`, `semantic_cache_clear` |
 
 ---
 
@@ -192,6 +193,59 @@ Extractive summarization for plain text (use `CavemanConversationPlugin.summariz
 | :--- | :--- |
 | `summarize_text(text, sentences, ratio, algo, iso3)` | TF-IDF (`tfidf`) or TextRank (`textrank`, default) extractive summary. |
 | `summarize_text_topic_aware(text, sentences, iso3)` | Segments the text into topics first (TextTiling-style), then allocates the sentence budget proportionally so one dense topic can't starve the rest. Best for long, multi-topic documents. |
+
+### CavemanSemanticCachePlugin *(new in v1.5.0)*
+An algorithmic, multilingual semantic cache for agents: a paraphrase of an earlier query is answered from the cache
+instead of a new model call. No embeddings, no model, no network.
+
+| Function | Description |
+| :--- | :--- |
+| `semantic_cache_get(query)` | Returns `{hit, response, similarity, matched_query, language}`; `hit=false` on a miss. |
+| `semantic_cache_set(query, response)` | Stores an answer under a query. |
+| `semantic_cache_stats()` | Entries, hits, misses, hit rate, characters served from the cache. |
+| `semantic_cache_clear()` | Empties the cache. |
+
+Numbers, file names, paths, identifiers and quoted strings must match exactly for a hit, so a request about
+`Program.cs` never matches one about `Startup.cs`. The default cache is shared by every plugin instance; pass your own
+`CavemanSemanticCache` to the constructor to tune the threshold, size or TTL.
+
+```csharp
+builder.Plugins.AddFromType<CavemanSemanticCachePlugin>();
+
+// before calling the model:
+var hit = await kernel.InvokeAsync("CavemanSemanticCachePlugin", "semantic_cache_get", new() { ["query"] = userQuestion });
+// after producing a fresh answer:
+await kernel.InvokeAsync("CavemanSemanticCachePlugin", "semantic_cache_set", new() { ["query"] = userQuestion, ["response"] = answer });
+```
+
+### Compacting a chat that contains tool calls *(new in v1.5.0)*
+`CavemanConversationPlugin.compact_messages` takes a messages array (OpenAI-compatible, Anthropic, Amazon Bedrock
+Converse, Gemini or Cohere JSON) and returns messages ready to re-send.
+
+| Parameter | Meaning |
+| :--- | :--- |
+| `messagesJson` | The messages array as JSON |
+| `maxTokens` | Hard token budget (0 = none) |
+| `keepLastTurns` | Recent turns kept verbatim (default 4) |
+| `format` | `openai` (same roles as the input) or `converse` (Amazon Bedrock Converse) |
+| `model` | Any model name for token counting: gpt, claude, gemini, qwen, deepseek, grok, glm, spark, mistral, nova, kimi, ernie, command |
+
+- **Tool calls and tool results are never removed or altered.** Same ids, same blocks, same payload.
+- **JSON, XML, HTML, Markdown, SQL and code are compressed, not stripped** (JSON stays valid, XML stays well-formed).
+- With `format = "converse"` the result is `{ "system": ..., "messages": [...] }` with strict user/assistant
+  alternation, a user first turn, no empty turn and `toolUse` / `toolResult` blocks, as Bedrock (Nova, Claude) requires.
+
+```csharp
+var json = await kernel.InvokeAsync<string>("CavemanConversationPlugin", "compact_messages", new()
+{
+    ["messagesJson"] = messages,
+    ["maxTokens"]    = 4000,
+    ["format"]       = "converse",
+    ["model"]        = "us.amazon.nova-pro-v1:0"
+});
+```
+
+`estimate_tokens` and `fit_to_budget` now accept any model name (any version) of the supported families.
 
 ---
 

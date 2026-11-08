@@ -69,19 +69,12 @@ namespace caveman.core.SemanticKernel.Plugin
         /// l'occupazione della finestra di contesto prima dell'invio.
         /// </summary>
         [KernelFunction("estimate_tokens")]
-        [Description("Estimates the token count of a text for a given model (gpt-4, gpt-3.5, llama-3, gemma-3, claude-3).")]
+        [Description("Estimates the token count of a text for a given model family (gpt, claude, gemini, gemma, llama, qwen, deepseek, grok, glm, spark, mistral, nova, kimi, ernie, command).")]
         public int EstimateTokens(
             [Description("The text to measure")] string input,
-            [Description("Model: gpt-4 (default), gpt-3.5, llama-3, gemma-3, claude-3")] string model = "gpt-4")
+            [Description("Model name, any version: gpt-4 (default), claude-sonnet, gemini-2.5-pro, qwen2.5-72b, deepseek-v3, grok-4, glm-4.6, ...")] string model = "gpt-4")
         {
-            var llm = (model ?? string.Empty).Trim().ToLowerInvariant() switch
-            {
-                "gpt-3.5" or "gpt-3.5-turbo" or "gpt35" => LlmModel.Gpt3_5Turbo,
-                "llama-3" or "llama3" or "llama" => LlmModel.Llama3,
-                "gemma-3" or "gemma3" or "gemma" => LlmModel.Gemma3,
-                "claude-3" or "claude3" or "claude" => LlmModel.Claude3,
-                _ => LlmModel.Gpt4
-            };
+            var llm = LlmModelParser.Parse(model);
             return _tokenizer.CountTokens(input ?? string.Empty, llm);
         }
 

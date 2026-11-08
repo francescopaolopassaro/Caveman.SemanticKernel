@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <PackageId>Caveman.SemanticKernel</PackageId>
-    <Version>1.4.5</Version>
+    <Version>1.5.0</Version>
     <Authors>Francesco Paolo Passaro</Authors>
     <Company>Francesco Paolo Passaro</Company>
     <Description>Semantic Kernel plugins for Caveman (NLP Prompt Compressor): prompt token optimization, conversation/agent context tools (summarize, fit-to-budget, memory, focus, token estimate), developer services and on-demand project documentation. Add-on package; references the dependency-free Caveman core. Licensed under the Caveman License (MIT + mandatory attribution to Passaro Francesco Paolo - Digitalsolutions.it).</Description>
     <PackageTags>AI;NLP;LLM;PromptEngineering;SemanticKernel;Agents</PackageTags>
     <RepositoryUrl>https://github.com/francescopaolopassaro/caveman-semantickernel</RepositoryUrl>
-    <PackageReleaseNotes>1.4.4: aligned with Caveman core 1.4.4. CavemanServicesPlugin gains compress_sql (whitespace-safe SQL compression that preserves string literals, quoted identifiers, nested parentheses and comments; optional stripComments and VALUES folding with a CCR-hash reference for dropped tuples). CavemanRouterPlugin.detect_content_type now recognizes Sql content.</PackageReleaseNotes>
+    <PackageReleaseNotes>1.5.0: aligned with Caveman core 1.5.0 and targets .NET 10. New CavemanSemanticCachePlugin (semantic_cache_get/set/stats/clear) and CavemanConversationPlugin.compact_messages (tool calls and results never removed; JSON/XML/HTML/Markdown/code compressed, not stripped; optional Amazon Bedrock Converse output). Model names of Gemini, Qwen, DeepSeek, Grok, GLM, Spark, Mistral, Nova, Kimi, Ernie and Command are accepted. 1.4.4: aligned with Caveman core 1.4.4. CavemanServicesPlugin gains compress_sql (whitespace-safe SQL compression that preserves string literals, quoted identifiers, nested parentheses and comments; optional stripComments and VALUES folding with a CCR-hash reference for dropped tuples). CavemanRouterPlugin.detect_content_type now recognizes Sql content.</PackageReleaseNotes>
 
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>Caveman.SemanticKernel</Title>
@@ -20,7 +20,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <Copyright>Copyright (c) 2026 Passaro Francesco Paolo - Digitalsolutions.it</Copyright>
     <PackageProjectUrl>https://github.com/francescopaolopassaro/caveman-semantickernel/</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <RootNamespace>caveman.core.SemanticKernel.Plugin</RootNamespace>
@@ -41,11 +41,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Caveman" Version="1.4.5" />
+    <PackageReference Include="Caveman" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="README.md">
+    <None Include="README.nuget.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

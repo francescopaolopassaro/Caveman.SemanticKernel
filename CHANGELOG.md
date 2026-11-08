@@ -2,6 +2,26 @@
 
 All notable changes to **Caveman.SemanticKernel** are documented in this file.
 
+## [1.5.0] - 2026-11-08
+
+Aligned with **Caveman core 1.5.0**. The package now targets **.NET 10**.
+
+### Added
+
+- `CavemanSemanticCachePlugin` - `semantic_cache_get`, `semantic_cache_set`, `semantic_cache_stats`, `semantic_cache_clear`: an algorithmic, multilingual semantic cache for agents. Numbers, file names, identifiers and quoted strings must match exactly for a hit. The default cache is shared across plugin instances; a custom `CavemanSemanticCache` can be injected.
+- `CavemanConversationPlugin.compact_messages` - compacts an OpenAI-compatible, Anthropic, Bedrock Converse, Gemini or Cohere messages array. Tool calls and tool results are never removed or altered; JSON, XML, HTML, Markdown, SQL and code are compressed instead of stripped. `format = "converse"` returns a payload that satisfies Amazon Bedrock Converse (Nova, Claude): system prompt separate, strict user/assistant alternation, `toolUse` / `toolResult` blocks.
+
+### Changed
+
+- `estimate_tokens` and `fit_to_budget` accept any model name of the supported families (gpt, claude, gemini, gemma, llama, qwen, deepseek, grok, glm, spark, mistral, nova, kimi, ernie, command) through `LlmModelParser`.
+- Conversation functions inherit the core behaviour: structured content in chats is compressed, not stripped.
+
+### Testing
+
+- 17 new tests (semantic cache, `compact_messages` for OpenAI and Converse shapes, model parsing). Full suite: 116/116 passing on .NET 10.
+
+---
+
 ## [1.4.5] - 2026-10-11
 
 Aligned with **Caveman core 1.4.5**. No API changes: every `compress` / `OptimizePrompt` call now keeps structured values (IPs, versions, dates, URLs) verbatim, never corrupts JSON/code/SQL/YAML (routed to the structure-aware compressors or returned unchanged) and no longer inflates Chinese/Japanese output.
